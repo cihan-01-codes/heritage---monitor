@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="page-header">
+    <h2>Admin Dashboard</h2>
+    <p>Full system overview and control</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <p class="label">Total Buildings</p>
+        <p class="value value-amber" id="total-buildings">--</p>
+    </div>
+    <div class="stat-card">
+        <p class="label">Total Users</p>
+        <p class="value value-stone" id="total-users">--</p>
+    </div>
+    <div class="stat-card">
+        <p class="label">Active Alerts</p>
+        <p class="value value-red" id="total-alerts">--</p>
+    </div>
+    <div class="stat-card">
+        <p class="label">Sensor Readings</p>
+        <p class="value value-green" id="total-readings">--</p>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="card">
+        <h3>Temperature Trend</h3>
+        <canvas id="tempChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>Humidity Trend</h3>
+        <canvas id="humidChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>Vibration Trend</h3>
+        <canvas id="vibChart"></canvas>
+    </div>
+</div>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>loadAdminDashboard();</script>
+{% endblock %}

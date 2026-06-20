@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h2>User Management</h2>
+        <p>Admin-only — manage system accounts</p>
+    </div>
+    <a href="/users/create/" class="btn-primary">+ Add User</a>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="success-box">{{ message }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.email }}</td>
+                <td><span class="badge badge-role-{{ u.role|lower }}">{{ u.role }}</span></td>
+                <td>{{ u.phone_number|default:"—" }}</td>
+                <td>
+                    <a href="/users/{{ u.id }}/edit/" class="btn-edit">Edit</a>
+                    {% if u != request.user %}
+                    <a href="/users/{{ u.id }}/delete/" class="btn-delete"
+                        onclick="return confirm('Delete {{ u.username }}?')">Delete</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="empty-state">No users found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

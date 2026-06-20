@@ -1,0 +1,52 @@
+import json
+import csv
+import os
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponse
+from .models import SensorData
+from buildings.models import Building
+from alerts.utils import check_thresholds
+
+
+@csrf_exempt
+def receive_sensor_data(request):
+    if request.method == 'POST':
+        api_key = request.headers.get('X-API-Key')
+        if api_key != os.getenv('SENSOR_API_KEY'):
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+        try:
+            payload = json.loads(request.body)
+            building = Building.objects.get(building_id=payload['building_id'])
+            reading = SensorData.objects.create(
+                building=building,
+                temperature=payload['temperature'],
+                humidity=payload['humidity'],
+                vibration=payload['vibration'],
+            )
+            check_thresholds(reading)
+            return JsonResponse({'status': 'ok', 'data_id': reading.data_id})
+        except Building.DoesNotExist:
+            return JsonResponse({'error': 'Building not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'POST required'}, status=405)
+
+
+@login_required
+def export_sensor_csv(request):
+    user = request.user
+    if user.role in ['Admin', 'Antiquities']:
+        readings = SensorData.objects.all().order_by('-recorded_at')
+    else:
+        readings = SensorData.objects.filter(
+            building__user=user
+        ).order_by('-recorded_at')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="sensor_report.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Building', 'Temperature', 'Humidity', 'Vibration', 'Recorded At'])
+    for r in readings:
+        writer.writerow([r.data_id, r.building.name, r.temperature, r.humidity, r.vibration, r.recorded_at])
+    return response

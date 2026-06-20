@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="page-header">
+    <h2>Antiquities Dashboard</h2>
+    <p>Cross-site risk analytics and live alerts</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <p class="label">Total Buildings</p>
+        <p class="value value-amber" id="total-buildings">--</p>
+    </div>
+    <div class="stat-card">
+        <p class="label">Active Alerts</p>
+        <p class="value value-red" id="total-alerts">--</p>
+    </div>
+    <div class="stat-card">
+        <p class="label">Sensor Readings</p>
+        <p class="value value-green" id="total-readings">--</p>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="card">
+        <h3>Temperature Trend</h3>
+        <canvas id="tempChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>Humidity Trend</h3>
+        <canvas id="humidChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>Vibration Trend</h3>
+        <canvas id="vibChart"></canvas>
+    </div>
+</div>
+
+<div class="card" style="margin-top:1.5rem">
+    <h3>Live Alerts</h3>
+    <div id="alerts-list">Loading...</div>
+</div>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>loadAntiquitiesDashboard();</script>
+{% endblock %}

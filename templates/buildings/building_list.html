@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h2>Buildings</h2>
+        <p>Heritage sites being monitored</p>
+    </div>
+    {% if request.user.role == 'Admin' %}
+    <a href="/buildings/create/" class="btn-primary">+ Add Building</a>
+    {% endif %}
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="success-box">{{ message }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Owner</th>
+                {% if request.user.role == 'Admin' %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in buildings %}
+            <tr>
+                <td>{{ b.building_id }}</td>
+                <td><strong>{{ b.name }}</strong></td>
+                <td>{{ b.location_gps }}</td>
+                <td>{{ b.user.username }}</td>
+                {% if request.user.role == 'Admin' %}
+                <td>
+                    <a href="/buildings/{{ b.building_id }}/edit/" class="btn-edit">Edit</a>
+                    <a href="/buildings/{{ b.building_id }}/delete/"
+                        class="btn-delete"
+                        onclick="return confirm('Delete {{ b.name }}?')">Delete</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="empty-state">No buildings found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

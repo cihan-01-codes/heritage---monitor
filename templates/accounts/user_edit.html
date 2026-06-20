@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <h2>Edit User — {{ target_user.username }}</h2>
+</div>
+
+{% if error %}
+<div class="error-box">{{ error }}</div>
+{% endif %}
+
+<div class="card" style="max-width: 520px;">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ target_user.email }}">
+        </div>
+        <div class="form-group">
+            <label>Role</label>
+            <select name="role">
+                <option value="Admin" {% if target_user.role == 'Admin' %}selected{% endif %}>Admin</option>
+                <option value="Antiquities" {% if target_user.role == 'Antiquities' %}selected{% endif %}>Antiquities</option>
+                <option value="Partner" {% if target_user.role == 'Partner' %}selected{% endif %}>Partner</option>
+                <option value="Owner" {% if target_user.role == 'Owner' %}selected{% endif %}>Owner</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" name="phone_number" value="{{ target_user.phone_number }}">
+        </div>
+        <div class="form-group">
+            <label>New Password <small style="color:#a8a29e">(leave blank to keep current)</small></label>
+            <input type="password" name="password">
+        </div>
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+            <button type="submit" class="btn-login" style="width:auto; padding: 0.6rem 2rem;">Save Changes</button>
+            <a href="/users/" class="btn-cancel">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
