@@ -100,3 +100,4 @@ async function loadOwnerDashboard() {
     makeChart('ownerVibChart', 'Vibration', data.vibrations, data.labels, '#ef4444');
     setTimeout(loadOwnerDashboard, 30000);
 }
+

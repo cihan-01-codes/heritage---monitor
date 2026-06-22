@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
 from .models import Building
 from accounts.models import User
+from sensors.models import SensorData
+from alerts.models import Alert
 
 
 @login_required
@@ -57,3 +60,44 @@ def building_delete(request, building_id):
     building.delete()
     messages.success(request, 'Building deleted')
     return redirect('building_list')
+
+
+@login_required
+def building_trends(request, building_id):
+    user = request.user
+    building = get_object_or_404(Building, pk=building_id)
+    if user.role == 'Owner' and building.user != user:
+        return redirect('building_list')
+    return render(request, 'buildings/building_trends.html', {'building': building})
+
+
+@login_required
+def building_stats_api(request, building_id):
+    user = request.user
+    building = get_object_or_404(Building, pk=building_id)
+    if user.role == 'Owner' and building.user != user:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    readings = SensorData.objects.filter(
+        building=building
+    ).order_by('-recorded_at')[:30]
+    readings = list(reversed(list(readings)))
+
+    alerts = Alert.objects.filter(
+        building=building
+    ).order_by('-sent_at')[:5]
+
+    return JsonResponse({
+        'building_name': building.name,
+        'location': building.location_gps,
+        'total_readings': SensorData.objects.filter(building=building).count(),
+        'total_alerts': Alert.objects.filter(building=building).count(),
+        'labels': [r.recorded_at.strftime('%b %d %H:%M') for r in readings],
+        'temperatures': [r.temperature for r in readings],
+        'humidities': [r.humidity for r in readings],
+        'vibrations': [r.vibration for r in readings],
+        'recent_alerts': [
+            {'severity': a.severity, 'message': a.message, 'sent_at': a.sent_at.strftime('%b %d %H:%M')}
+            for a in alerts
+        ],
+    })

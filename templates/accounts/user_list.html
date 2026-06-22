@@ -10,7 +10,7 @@
 
 {% if messages %}
 {% for message in messages %}
-<div class="success-box">{{ message }}</div>
+<div class="success-box" style="word-break:break-all;">{{ message }}</div>
 {% endfor %}
 {% endif %}
 
@@ -22,6 +22,7 @@
                 <th>Email</th>
                 <th>Role</th>
                 <th>Phone</th>
+                <th>Must Change PW</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -33,7 +34,17 @@
                 <td><span class="badge badge-role-{{ u.role|lower }}">{{ u.role }}</span></td>
                 <td>{{ u.phone_number|default:"—" }}</td>
                 <td>
+                    {% if u.must_change_password %}
+                    <span class="badge badge-warning">Yes</span>
+                    {% else %}
+                    <span class="badge" style="background:#d1fae5;color:#065f46;">No</span>
+                    {% endif %}
+                </td>
+                <td>
                     <a href="/users/{{ u.id }}/edit/" class="btn-edit">Edit</a>
+                    <a href="/users/{{ u.id }}/reset-password/" class="btn-edit"
+                        style="background:#8b5cf6"
+                        onclick="return confirm('Reset password for {{ u.username }}?')">Reset PW</a>
                     {% if u != request.user %}
                     <a href="/users/{{ u.id }}/delete/" class="btn-delete"
                         onclick="return confirm('Delete {{ u.username }}?')">Delete</a>
@@ -41,7 +52,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="empty-state">No users found</td></tr>
+            <tr><td colspan="6" class="empty-state">No users found</td></tr>
             {% endfor %}
         </tbody>
     </table>

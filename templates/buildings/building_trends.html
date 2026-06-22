@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h2>{{ building.name }}</h2>
+        <p>📍 {{ building.location_gps }} — Sensor Trends</p>
+    </div>
+    <a href="/buildings/" class="btn-cancel">← Back to Buildings</a>
+</div>
+
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <p class="label">Total Readings</p>
+        <p class="value value-green" id="total-readings">--</p>
+    </div>
+    <div class="stat-card">
+        <p class="label">Total Alerts</p>
+        <p class="value value-red" id="total-alerts">--</p>
+    </div>
+    <div class="stat-card">
+        <p class="label">Location</p>
+        <p class="value value-stone" style="font-size:1rem;">{{ building.location_gps }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="label">Owner</p>
+        <p class="value value-amber" style="font-size:1rem;">{{ building.user.username }}</p>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="card">
+        <h3>🌡️ Temperature Trend (°C)</h3>
+        <canvas id="tempChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>💧 Humidity Trend (%)</h3>
+        <canvas id="humidChart"></canvas>
+    </div>
+    <div class="card">
+        <h3>📳 Vibration Trend</h3>
+        <canvas id="vibChart"></canvas>
+    </div>
+</div>
+
+<div class="card" style="margin-top:1.5rem;">
+    <h3>Recent Alerts</h3>
+    <div id="alerts-list">Loading...</div>
+</div>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+const buildingId = {{ building.building_id }};
+
+async function loadBuildingTrends() {
+    const res = await fetch(`/api/buildings/${buildingId}/stats/`);
+    const data = await res.json();
+
+    document.getElementById('total-readings').textContent = data.total_readings;
+    document.getElementById('total-alerts').textContent = data.total_alerts;
+
+    makeChart('tempChart', 'Temperature °C', data.temperatures, data.labels, '#f59e0b');
+    makeChart('humidChart', 'Humidity %', data.humidities, data.labels, '#3b82f6');
+    makeChart('vibChart', 'Vibration', data.vibrations, data.labels, '#ef4444');
+
+    const list = document.getElementById('alerts-list');
+    list.innerHTML = data.recent_alerts.length
+        ? data.recent_alerts.map(a =>
+            `<div class="alert-item ${a.severity === 'Critical' ? 'alert-critical' : 'alert-warning'}">
+                <strong>${a.severity}</strong>: ${a.message}
+                <span style="float:right; font-size:0.75rem; opacity:0.7;">${a.sent_at}</span>
+            </div>`).join('')
+        : '<p class="empty-state">No alerts for this building</p>';
+
+    setTimeout(loadBuildingTrends, 30000);
+}
+
+loadBuildingTrends();
+</script>
+{% endblock %}

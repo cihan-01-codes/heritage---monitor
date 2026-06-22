@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
 from sensors.models import SensorData
 from alerts.models import Alert
 from buildings.models import Building
-from .models import User
+from .models import User, generate_temp_password
 
 
 def login_view(request):
@@ -17,6 +17,8 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
+            if user.must_change_password:
+                return redirect('change_password')
             return redirect('dashboard')
         else:
             error = 'Invalid credentials'
@@ -26,6 +28,50 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+def forgot_password_view(request):
+    message = None
+    error = None
+    temp_pwd = None
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        try:
+            user = User.objects.get(username=username)
+            temp_pwd = generate_temp_password()
+            user.set_password(temp_pwd)
+            user.must_change_password = True
+            user.temp_password = temp_pwd
+            user.save()
+            message = f'Temporary password generated for {username}'
+        except User.DoesNotExist:
+            error = 'Username not found'
+    return render(request, 'accounts/forgot_password.html', {
+        'message': message,
+        'error': error,
+        'temp_pwd': temp_pwd,
+    })
+
+
+@login_required
+def change_password_view(request):
+    error = None
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        if new_password != confirm_password:
+            error = 'Passwords do not match'
+        elif len(new_password) < 6:
+            error = 'Password must be at least 6 characters'
+        else:
+            request.user.set_password(new_password)
+            request.user.must_change_password = False
+            request.user.temp_password = None
+            request.user.save()
+            update_session_auth_hash(request, request.user)
+            messages.success(request, 'Password changed successfully')
+            return redirect('dashboard')
+    return render(request, 'accounts/change_password.html', {'error': error})
 
 
 @login_required
@@ -92,14 +138,15 @@ def user_create(request):
         if User.objects.filter(username=username).exists():
             error = 'Username already exists'
         else:
-            User.objects.create_user(
+            user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
                 role=role,
                 phone_number=phone_number,
+                must_change_password=True,
             )
-            messages.success(request, f'User {username} created successfully')
+            messages.success(request, f'User {username} created. They must change password on first login.')
             return redirect('user_list')
     return render(request, 'accounts/user_create.html', {'error': error})
 
@@ -117,6 +164,7 @@ def user_edit(request, user_id):
         new_password = request.POST.get('password')
         if new_password:
             target_user.set_password(new_password)
+            target_user.must_change_password = True
         target_user.save()
         messages.success(request, f'User {target_user.username} updated')
         return redirect('user_list')
@@ -131,4 +179,18 @@ def user_delete(request, user_id):
     if target_user != request.user:
         target_user.delete()
         messages.success(request, 'User deleted')
+    return redirect('user_list')
+
+
+@login_required
+def user_reset_password(request, user_id):
+    if request.user.role != 'Admin':
+        return redirect('dashboard')
+    target_user = get_object_or_404(User, pk=user_id)
+    temp_pwd = generate_temp_password()
+    target_user.set_password(temp_pwd)
+    target_user.must_change_password = True
+    target_user.temp_password = temp_pwd
+    target_user.save()
+    messages.success(request, f'Temporary password for {target_user.username}: {temp_pwd}')
     return redirect('user_list')
