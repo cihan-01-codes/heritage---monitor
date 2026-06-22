@@ -50,7 +50,7 @@
 
 <script src="{% static 'js/dashboard.js' %}"></script>
 <script>
-const buildingId = {{ building.building_id }};
+const buildingId = "{{ building.building_id }}";
 
 async function loadBuildingTrends() {
     const res = await fetch(`/api/buildings/${buildingId}/stats/`);
