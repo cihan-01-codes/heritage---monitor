@@ -18,6 +18,7 @@
     <table>
         <thead>
             <tr>
+                <th>Full Name</th>
                 <th>Username</th>
                 <th>Email</th>
                 <th>Role</th>
@@ -29,6 +30,7 @@
         <tbody>
             {% for u in users %}
             <tr>
+                <td>{{ u.first_name }} {{ u.last_name }}</td>
                 <td><strong>{{ u.username }}</strong></td>
                 <td>{{ u.email }}</td>
                 <td><span class="badge badge-role-{{ u.role|lower }}">{{ u.role }}</span></td>
@@ -52,7 +54,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="empty-state">No users found</td></tr>
+            <tr><td colspan="7" class="empty-state">No users found</td></tr>
             {% endfor %}
         </tbody>
     </table>

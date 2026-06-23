@@ -135,21 +135,24 @@ def user_create(request):
         password = request.POST.get('password')
         role = request.POST.get('role')
         phone_number = request.POST.get('phone_number')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         if User.objects.filter(username=username).exists():
             error = 'Username already exists'
         else:
-            user = User.objects.create_user(
+            User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
                 role=role,
                 phone_number=phone_number,
+                first_name=first_name,
+                last_name=last_name,
                 must_change_password=True,
             )
             messages.success(request, f'User {username} created. They must change password on first login.')
             return redirect('user_list')
     return render(request, 'accounts/user_create.html', {'error': error})
-
 
 @login_required
 def user_edit(request, user_id):
@@ -161,6 +164,8 @@ def user_edit(request, user_id):
         target_user.email = request.POST.get('email')
         target_user.role = request.POST.get('role')
         target_user.phone_number = request.POST.get('phone_number')
+        target_user.first_name = request.POST.get('first_name')
+        target_user.last_name = request.POST.get('last_name')
         new_password = request.POST.get('password')
         if new_password:
             target_user.set_password(new_password)
@@ -169,7 +174,6 @@ def user_edit(request, user_id):
         messages.success(request, f'User {target_user.username} updated')
         return redirect('user_list')
     return render(request, 'accounts/user_edit.html', {'target_user': target_user, 'error': error})
-
 
 @login_required
 def user_delete(request, user_id):

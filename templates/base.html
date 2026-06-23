@@ -12,7 +12,10 @@
     <nav class="navbar">
         <div class="navbar-brand">🏛️ Heritage Monitor</div>
         <div class="navbar-links">
-            <span class="navbar-user">{{ user.username }} ({{ user.role }})</span>
+            <span class="navbar-user">
+    {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}
+    ({{ user.role }})
+</span>
             <a href="/dashboard/">Dashboard</a>
             <a href="/buildings/">Buildings</a>
             <a href="/alerts/">Alerts</a>
