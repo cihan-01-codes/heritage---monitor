@@ -8,21 +8,22 @@
     <a href="/api/sensor-data/export/" class="btn-primary">⬇ Export CSV</a>
 </div>
 
-<!-- Filter by building -->
 <div class="card" style="margin-bottom:1.5rem;">
-    <form method="GET" style="display:flex; gap:1rem; align-items:center;">
-        <label style="font-size:0.875rem; font-weight:600; color:#44403c;">Filter by Building:</label>
-        <select name="building" style="width:auto; min-width:200px;">
-            <option value="">All Buildings</option>
-            {% for b in buildings %}
-            <option value="{{ b.building_id }}"
-                {% if selected_building == b.building_id|stringformat:"s" %}selected{% endif %}>
-                {{ b.name }}
-            </option>
-            {% endfor %}
-        </select>
-        <button type="submit" class="btn-primary" style="padding:0.5rem 1.2rem;">Filter</button>
-        <a href="/readings/" class="btn-cancel" style="padding:0.5rem 1.2rem;">Clear</a>
+    <form method="GET">
+        <div class="filter-bar">
+            <label>Filter by Building:</label>
+            <select name="building">
+                <option value="">All Buildings</option>
+                {% for b in buildings %}
+                <option value="{{ b.building_id }}"
+                    {% if selected_building == b.building_id|stringformat:"s" %}selected{% endif %}>
+                    {{ b.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-primary" style="padding:0.5rem 1.2rem;">Filter</button>
+            <a href="/readings/" class="btn-cancel" style="padding:0.5rem 1.2rem;">Clear</a>
+        </div>
     </form>
 </div>
 
@@ -45,26 +46,26 @@
                 <td>{{ r.data_id }}</td>
                 <td>
                     <a href="/buildings/{{ r.building.building_id }}/trends/"
-                        style="color:#f59e0b; text-decoration:none; font-weight:600;">
+                        class="value-warning">
                         {{ r.building.name }}
                     </a>
                 </td>
                 <td>
-                    <span style="color:{% if r.temperature >= 48 %}#b91c1c{% elif r.temperature >= 40 %}#d97706{% else %}#065f46{% endif %}; font-weight:600;">
+                    <span class="{% if r.temperature >= 48 %}value-critical{% elif r.temperature >= 40 %}value-warning{% else %}value-normal{% endif %}">
                         {{ r.temperature }}
                     </span>
                 </td>
                 <td>
-                    <span style="color:{% if r.humidity >= 96 %}#b91c1c{% elif r.humidity >= 80 %}#d97706{% else %}#065f46{% endif %};font-weight:600;">
+                    <span class="{% if r.humidity >= 96 %}value-critical{% elif r.humidity >= 80 %}value-warning{% else %}value-normal{% endif %}">
                         {{ r.humidity }}
                     </span>
                 </td>
                 <td>
-                    <span style="color:{% if r.vibration >= 0.96 %}#b91c1c{% elif r.vibration >= 0.8 %}#d97706{% else %}#065f46{% endif %}; font-weight:600;">
+                    <span class="{% if r.vibration >= 0.96 %}value-critical{% elif r.vibration >= 0.8 %}value-warning{% else %}value-normal{% endif %}">
                         {{ r.vibration }}
                     </span>
                 </td>
-                <td style="color:#78716c;">{{ r.recorded_at|date:"M d, Y H:i:s" }}</td>
+                <td class="text-muted">{{ r.recorded_at|date:"M d, Y H:i:s" }}</td>
                 <td>
                     {% if r.temperature >= 48 or r.humidity >= 96 or r.vibration >= 0.96 %}
                     <span class="badge badge-critical">Critical</span>

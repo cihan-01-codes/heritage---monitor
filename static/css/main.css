@@ -410,3 +410,29 @@ select:focus {
     border-color: #f59e0b;
     box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
 }
+
+/* Sensor reading value colors */
+.value-normal { color: #065f46; font-weight: 600; }
+.value-warning { color: #d97706; font-weight: 600; }
+.value-critical { color: #b91c1c; font-weight: 600; }
+
+/* Readings filter bar */
+.filter-bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-bar label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #44403c;
+}
+
+.filter-bar select {
+    width: auto;
+    min-width: 200px;
+}
+
+.text-muted { color: #78716c; }
