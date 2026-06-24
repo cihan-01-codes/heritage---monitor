@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'buildings',
     'sensors',
     'alerts',
+    'threshold_config',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <h2>⚙️ System Settings</h2>
+    <p>Configure alert threshold limits for all buildings</p>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="success-box">{{ message }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="card" style="max-width:680px;">
+    <form method="POST">
+        {% csrf_token %}
+        <table style="width:100%; border-collapse:collapse; font-size:0.875rem;">
+            <thead>
+                <tr style="background:#f5f5f4;">
+                    <th style="padding:0.75rem 1rem; text-align:left; color:#78716c;">Parameter</th>
+                    <th style="padding:0.75rem 1rem; text-align:left; color:#78716c;">Warning Limit</th>
+                    <th style="padding:0.75rem 1rem; text-align:left; color:#78716c;">Critical Multiplier</th>
+                    <th style="padding:0.75rem 1rem; text-align:left; color:#78716c;">Critical Limit (auto)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in thresholds %}
+                <tr style="border-top:1px solid #e7e5e4;">
+                    <td style="padding:1rem;">
+                        <strong style="text-transform:capitalize;">{{ t.parameter }}</strong>
+                        {% if t.unit %}
+                        <span style="color:#78716c; font-size:0.8rem;">({{ t.unit }})</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding:1rem;">
+                        <input type="number" name="warning_{{ t.parameter }}"
+                            value="{{ t.warning_limit }}"
+                            step="0.1" min="0" required
+                            style="width:100px; border:1px solid #d6d3d1; border-radius:0.375rem;
+                                   padding:0.4rem 0.6rem; font-size:0.875rem;">
+                    </td>
+                    <td style="padding:1rem;">
+                        <input type="number" name="multiplier_{{ t.parameter }}"
+                            value="{{ t.critical_multiplier }}"
+                            step="0.01" min="1" max="3" required
+                            style="width:100px; border:1px solid #d6d3d1; border-radius:0.375rem;
+                                   padding:0.4rem 0.6rem; font-size:0.875rem;">
+                        <span style="color:#78716c; font-size:0.75rem;">× warning</span>
+                    </td>
+                    <td style="padding:1rem;">
+                        <span class="badge badge-critical">{{ t.critical_limit }} {{ t.unit }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e7e5e4;">
+            <p style="font-size:0.8rem; color:#78716c; margin-bottom:1rem;">
+                ⚠️ Warning alerts fire when a reading meets or exceeds the Warning Limit.<br>
+                🔴 Critical alerts fire when a reading meets or exceeds Warning × Multiplier.
+            </p>
+            <button type="submit" class="btn-login" style="width:auto; padding:0.6rem 2rem;">
+                Save Settings
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

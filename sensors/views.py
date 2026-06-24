@@ -4,6 +4,7 @@ import os
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, get_object_or_404
 from .models import SensorData
 from buildings.models import Building
 from alerts.utils import check_thresholds
@@ -50,3 +51,42 @@ def export_sensor_csv(request):
     for r in readings:
         writer.writerow([r.data_id, r.building.name, r.temperature, r.humidity, r.vibration, r.recorded_at])
     return response
+
+
+@login_required
+def sensor_readings_list(request):
+    user = request.user
+    if user.role in ['Admin', 'Antiquities', 'Partner']:
+        buildings = Building.objects.all()
+        readings = SensorData.objects.all().order_by('-recorded_at')[:100]
+    else:
+        buildings = Building.objects.filter(user=user)
+        readings = SensorData.objects.filter(
+            building__in=buildings
+        ).order_by('-recorded_at')[:100]
+
+    selected_building = request.GET.get('building', '')
+    if selected_building:
+        readings = SensorData.objects.filter(
+            building__building_id=selected_building
+        ).order_by('-recorded_at')[:100]
+
+    return render(request, 'sensors/readings_list.html', {
+        'readings': readings,
+        'buildings': buildings,
+        'selected_building': selected_building,
+    })
+
+
+@login_required
+def sensor_readings_by_building(request, building_id):
+    building = get_object_or_404(Building, pk=building_id)
+    readings = SensorData.objects.filter(
+        building=building
+    ).order_by('-recorded_at')[:100]
+    return render(request, 'sensors/readings_list.html', {
+        'readings': readings,
+        'buildings': Building.objects.all(),
+        'selected_building': str(building_id),
+        'building': building,
+    })
