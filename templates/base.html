@@ -9,26 +9,72 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-brand">🏛️ Heritage Monitor</div>
-        <div class="navbar-links">
-            <span class="navbar-user">
-                {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}
-                ({{ user.role }})
-            </span>
-            <a href="/dashboard/">Dashboard</a>
-            <a href="/buildings/">Buildings</a>
-            <a href="/readings/">Readings</a>
-            <a href="/alerts/">Alerts</a>
-            {% if user.role == 'Admin' %}
-            <a href="/users/">Users</a>
-            <a href="/settings/">⚙️ Settings</a>
-            {% endif %}
-            <a href="/logout/" class="btn-logout">Logout</a>
+    <div class="layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">🏛️ Heritage Monitor</div>
+
+            <!-- User Info -->
+            <div class="sidebar-user">
+                <div class="sidebar-avatar">
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                </div>
+                <div>
+                    <p class="sidebar-username">
+                        {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}
+                        {% else %}{{ user.username }}{% endif %}
+                    </p>
+                    <span class="badge badge-role-{{ user.role|lower }}">{{ user.role }}</span>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="sidebar-nav">
+                <p class="sidebar-nav-label">Main</p>
+                <a href="/dashboard/" class="sidebar-link {% if request.path == '/dashboard/' %}active{% endif %}">
+                    <span class="sidebar-icon">📊</span> Dashboard
+                </a>
+                <a href="/buildings/" class="sidebar-link {% if request.path == '/buildings/' %}active{% endif %}">
+                    <span class="sidebar-icon">🏛️</span> Buildings
+                </a>
+                <a href="/readings/" class="sidebar-link {% if request.path == '/readings/' %}active{% endif %}">
+                    <span class="sidebar-icon">📡</span> Sensor Readings
+                </a>
+                <a href="/alerts/" class="sidebar-link {% if request.path == '/alerts/' %}active{% endif %}">
+                    <span class="sidebar-icon">🔔</span> Alerts
+                </a>
+
+                {% if user.role == 'Admin' %}
+                <p class="sidebar-nav-label">Administration</p>
+                <a href="/users/" class="sidebar-link {% if request.path == '/users/' %}active{% endif %}">
+                    <span class="sidebar-icon">👥</span> Users
+                </a>
+                <a href="/settings/" class="sidebar-link {% if request.path == '/settings/' %}active{% endif %}">
+                    <span class="sidebar-icon">⚙️</span> Settings
+                </a>
+                {% endif %}
+
+                <p class="sidebar-nav-label">Account</p>
+                <a href="/profile/" class="sidebar-link {% if request.path == '/profile/' %}active{% endif %}">
+                    <span class="sidebar-icon">👤</span> My Profile
+                </a>
+                <a href="/change-password/" class="sidebar-link {% if request.path == '/change-password/' %}active{% endif %}">
+                    <span class="sidebar-icon">🔑</span> Change Password
+                </a>
+                <a href="/logout/" class="sidebar-link sidebar-logout">
+                    <span class="sidebar-icon">🚪</span> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <main>
+                {% block content %}{% endblock %}
+            </main>
         </div>
-    </nav>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+
+    </div>
 </body>
 </html>

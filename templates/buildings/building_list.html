@@ -24,6 +24,7 @@
                 <th>Name</th>
                 <th>Location</th>
                 <th>Owner</th>
+                <th>Risk Level</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -35,8 +36,18 @@
                 <td>{{ b.location_gps }}</td>
                 <td>{{ b.user.username }}</td>
                 <td>
-                    <a href="/buildings/{{ b.building_id }}/trends/" class="btn-edit"
-                        style="background:#10b981;">📈 Trends</a>
+                    {% with risk=b.calculate_live_vulnerability_index %}
+                    <span class="badge
+                        {% if risk == 'High' %}badge-critical
+                        {% elif risk == 'Medium' %}badge-warning
+                        {% else %}badge-normal{% endif %}">
+                        {{ risk }}
+                    </span>
+                    {% endwith %}
+                </td>
+                <td>
+                    <a href="/buildings/{{ b.building_id }}/trends/"
+                        class="btn-edit" style="background:#10b981;">📈 Trends</a>
                     {% if request.user.role == 'Admin' %}
                     <a href="/buildings/{{ b.building_id }}/edit/" class="btn-edit">Edit</a>
                     <a href="/buildings/{{ b.building_id }}/delete/"
@@ -46,7 +57,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="empty-state">No buildings found</td></tr>
+            <tr><td colspan="6" class="empty-state">No buildings found</td></tr>
             {% endfor %}
         </tbody>
     </table>

@@ -1,0 +1,17 @@
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page=1{% if request.GET.building %}&building={{ request.GET.building }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.severity %}&severity={{ request.GET.severity }}{% endif %}">« First</a>
+    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.building %}&building={{ request.GET.building }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.severity %}&severity={{ request.GET.severity }}{% endif %}">‹ Prev</a>
+    {% endif %}
+
+    <span class="current-page">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.building %}&building={{ request.GET.building }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.severity %}&severity={{ request.GET.severity }}{% endif %}">Next ›</a>
+    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.building %}&building={{ request.GET.building }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.severity %}&severity={{ request.GET.severity }}{% endif %}">Last »</a>
+    {% endif %}
+</div>
+<p style="text-align:center; font-size:0.8rem; color:#a8a29e; margin-top:0.5rem;">
+    Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} records
+</p>
+

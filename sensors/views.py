@@ -90,3 +90,42 @@ def sensor_readings_by_building(request, building_id):
         'selected_building': str(building_id),
         'building': building,
     })
+
+@login_required
+def sensor_readings_list(request):
+    from django.core.paginator import Paginator
+    from django.utils.dateparse import parse_date
+
+    user = request.user
+    if user.role in ['Admin', 'Antiquities', 'Partner']:
+        buildings = Building.objects.all()
+        readings = SensorData.objects.all().order_by('-recorded_at')
+    else:
+        buildings = Building.objects.filter(user=user)
+        readings = SensorData.objects.filter(
+            building__in=buildings
+        ).order_by('-recorded_at')
+
+    selected_building = request.GET.get('building', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+
+    if selected_building:
+        readings = readings.filter(building__building_id=selected_building)
+    if date_from:
+        readings = readings.filter(recorded_at__date__gte=parse_date(date_from))
+    if date_to:
+        readings = readings.filter(recorded_at__date__lte=parse_date(date_to))
+
+    paginator = Paginator(readings, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'sensors/readings_list.html', {
+        'readings': page_obj,
+        'buildings': buildings,
+        'selected_building': selected_building,
+        'date_from': date_from,
+        'date_to': date_to,
+        'page_obj': page_obj,
+    })

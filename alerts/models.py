@@ -1,6 +1,7 @@
 from django.db import models
 from buildings.models import Building
 
+
 class ThresholdLog(models.Model):
     log_id = models.AutoField(primary_key=True)
     building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='threshold_logs')
@@ -30,6 +31,12 @@ class Alert(models.Model):
     severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES)
     message = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
+    acknowledged = models.BooleanField(default=False)
+    acknowledged_by = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='acknowledged_alerts'
+    )
+    acknowledged_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.severity} - {self.building.name}"

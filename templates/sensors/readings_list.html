@@ -11,7 +11,7 @@
 <div class="card" style="margin-bottom:1.5rem;">
     <form method="GET">
         <div class="filter-bar">
-            <label>Filter by Building:</label>
+            <label>Building:</label>
             <select name="building">
                 <option value="">All Buildings</option>
                 {% for b in buildings %}
@@ -21,6 +21,10 @@
                 </option>
                 {% endfor %}
             </select>
+            <label>From:</label>
+            <input type="date" name="date_from" value="{{ date_from }}">
+            <label>To:</label>
+            <input type="date" name="date_to" value="{{ date_to }}">
             <button type="submit" class="btn-primary" style="padding:0.5rem 1.2rem;">Filter</button>
             <a href="/readings/" class="btn-cancel" style="padding:0.5rem 1.2rem;">Clear</a>
         </div>
@@ -82,4 +86,6 @@
         </tbody>
     </table>
 </div>
+
+{% include 'pagination.html' %}
 {% endblock %}

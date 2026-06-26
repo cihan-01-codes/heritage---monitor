@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <h2>My Profile</h2>
+    <p>View and update your personal information</p>
+</div>
+
+{% if error %}
+<div class="error-box">{{ error }}</div>
+{% endif %}
+{% if success %}
+<div class="success-box">{{ success }}</div>
+{% endif %}
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; max-width:900px;">
+
+    <!-- Personal Info -->
+    <div class="card">
+        <h3 style="margin-bottom:1.5rem;">Personal Information</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="first_name" value="{{ user.first_name }}">
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" name="last_name" value="{{ user.last_name }}">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ user.email }}">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" name="phone_number" value="{{ user.phone_number }}">
+            </div>
+            <hr style="margin:1.5rem 0; border:none; border-top:1px solid #e7e5e4;">
+            <h3 style="margin-bottom:1rem; font-size:0.95rem;">Change Password</h3>
+            <div class="form-group">
+                <label>New Password <small style="color:#a8a29e">(leave blank to keep current)</small></label>
+                <input type="password" name="new_password" minlength="6">
+            </div>
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" name="confirm_password" minlength="6">
+            </div>
+            <button type="submit" class="btn-login" style="width:auto; padding:0.6rem 2rem;">
+                Save Changes
+            </button>
+        </form>
+    </div>
+
+    <!-- Account Info (read only) -->
+    <div class="card">
+        <h3 style="margin-bottom:1.5rem;">Account Details</h3>
+        <div style="space-y:1rem;">
+            <div style="margin-bottom:1rem;">
+                <p style="font-size:0.8rem; color:#78716c; margin-bottom:0.25rem;">Username</p>
+                <p style="font-weight:600; color:#44403c;">{{ user.username }}</p>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <p style="font-size:0.8rem; color:#78716c; margin-bottom:0.25rem;">Role</p>
+                <span class="badge badge-role-{{ user.role|lower }}">{{ user.role }}</span>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <p style="font-size:0.8rem; color:#78716c; margin-bottom:0.25rem;">Member Since</p>
+                <p style="font-weight:600; color:#44403c;">{{ user.date_joined|date:"M d, Y" }}</p>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <p style="font-size:0.8rem; color:#78716c; margin-bottom:0.25rem;">Last Login</p>
+                <p style="font-weight:600; color:#44403c;">{{ user.last_login|date:"M d, Y H:i" }}</p>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <p style="font-size:0.8rem; color:#78716c; margin-bottom:0.25rem;">Password Status</p>
+                {% if user.must_change_password %}
+                <span class="badge badge-warning">Change Required</span>
+                {% else %}
+                <span class="badge" style="background:#d1fae5;color:#065f46;">Up to date</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

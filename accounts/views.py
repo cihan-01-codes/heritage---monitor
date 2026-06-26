@@ -198,3 +198,32 @@ def user_reset_password(request, user_id):
     target_user.save()
     messages.success(request, f'Temporary password for {target_user.username}: {temp_pwd}')
     return redirect('user_list')
+
+@login_required
+def profile_view(request):
+    error = None
+    success = None
+    if request.method == 'POST':
+        request.user.first_name = request.POST.get('first_name')
+        request.user.last_name = request.POST.get('last_name')
+        request.user.email = request.POST.get('email')
+        request.user.phone_number = request.POST.get('phone_number')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        if new_password:
+            if new_password != confirm_password:
+                error = 'Passwords do not match'
+            elif len(new_password) < 6:
+                error = 'Password must be at least 6 characters'
+            else:
+                request.user.set_password(new_password)
+                update_session_auth_hash(request, request.user)
+                success = 'Profile and password updated successfully'
+        if not error:
+            request.user.save()
+            if not success:
+                success = 'Profile updated successfully'
+    return render(request, 'accounts/profile.html', {
+        'error': error,
+        'success': success,
+    })

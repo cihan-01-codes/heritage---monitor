@@ -8,6 +8,31 @@
     <a href="/alerts/export/" class="btn-primary">⬇ Export CSV</a>
 </div>
 
+<div class="card" style="margin-bottom:1.5rem;">
+    <form method="GET">
+        <div class="filter-bar">
+            <label>Severity:</label>
+            <select name="severity" style="width:auto; min-width:150px;">
+                <option value="">All</option>
+                <option value="Warning" {% if severity == 'Warning' %}selected{% endif %}>Warning</option>
+                <option value="Critical" {% if severity == 'Critical' %}selected{% endif %}>Critical</option>
+            </select>
+            <label>Status:</label>
+            <select name="acknowledged" style="width:auto; min-width:150px;">
+                <option value="">All</option>
+                <option value="no" {% if acknowledged == 'no' %}selected{% endif %}>Unreviewed</option>
+                <option value="yes" {% if acknowledged == 'yes' %}selected{% endif %}>Reviewed</option>
+            </select>
+            <label>From:</label>
+            <input type="date" name="date_from" value="{{ date_from }}">
+            <label>To:</label>
+            <input type="date" name="date_to" value="{{ date_to }}">
+            <button type="submit" class="btn-primary" style="padding:0.5rem 1.2rem;">Filter</button>
+            <a href="/alerts/" class="btn-cancel" style="padding:0.5rem 1.2rem;">Clear</a>
+        </div>
+    </form>
+</div>
+
 <div class="table-wrapper">
     <table>
         <thead>
@@ -17,6 +42,10 @@
                 <th>Severity</th>
                 <th>Message</th>
                 <th>Sent At</th>
+                <th>Status</th>
+                {% if request.user.role == 'Admin' or request.user.role == 'Antiquities' %}
+                <th>Action</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -30,12 +59,43 @@
                     </span>
                 </td>
                 <td>{{ alert.message }}</td>
-                <td>{{ alert.sent_at|date:"M d, Y H:i" }}</td>
+                <td class="text-muted">{{ alert.sent_at|date:"M d, Y H:i" }}</td>
+                <td>
+                    {% if alert.acknowledged %}
+                    <span class="badge" style="background:#d1fae5;color:#065f46;">
+                        ✓ Reviewed
+                    </span>
+                    <br>
+                    <small class="text-muted">
+                        by {{ alert.acknowledged_by.username }}<br>
+                        {{ alert.acknowledged_at|date:"M d H:i" }}
+                    </small>
+                    {% else %}
+                    <span class="badge badge-warning">Pending</span>
+                    {% endif %}
+                </td>
+                {% if request.user.role == 'Admin' or request.user.role == 'Antiquities' %}
+                <td>
+                    {% if not alert.acknowledged %}
+                    <a href="/alerts/{{ alert.alert_id }}/acknowledge/"
+                        class="btn-edit" style="background:#10b981;"
+                        onclick="return confirm('Mark this alert as reviewed?')">
+                        ✓ Review
+                    </a>
+                    {% else %}
+                    <span class="text-muted" style="font-size:0.8rem;">Done</span>
+                    {% endif %}
+                </td>
+                {% endif %}
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="empty-state">No alerts found</td></tr>
+            <tr>
+                <td colspan="7" class="empty-state">No alerts found</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+{% include 'pagination.html' %}
 {% endblock %}
