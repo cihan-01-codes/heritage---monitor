@@ -227,3 +227,14 @@ def profile_view(request):
         'error': error,
         'success': success,
     })
+
+@login_required
+def buildings_list_api(request):
+    from buildings.models import Building
+    if request.user.role in ['Admin', 'Antiquities']:
+        buildings = Building.objects.all()
+    else:
+        buildings = Building.objects.filter(user=request.user)
+    return JsonResponse({
+        'buildings': [{'id': b.building_id, 'name': b.name} for b in buildings]
+    })

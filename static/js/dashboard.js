@@ -5,6 +5,14 @@ async function fetchStats() {
 
 let charts = {};
 
+function updateLastUpdated() {
+    const el = document.getElementById('last-updated');
+    if (el) {
+        const now = new Date();
+        el.textContent = now.toLocaleTimeString();
+    }
+}
+
 function makeChart(id, label, data, labels, color) {
     if (charts[id]) {
         charts[id].data.labels = labels;
@@ -43,6 +51,7 @@ async function loadAdminDashboard() {
     makeChart('tempChart', 'Temperature °C', data.temperatures, data.labels, '#f59e0b');
     makeChart('humidChart', 'Humidity %', data.humidities, data.labels, '#3b82f6');
     makeChart('vibChart', 'Vibration', data.vibrations, data.labels, '#ef4444');
+    updateLastUpdated();
     setTimeout(loadAdminDashboard, 30000);
 }
 
@@ -61,6 +70,7 @@ async function loadAntiquitiesDashboard() {
     makeChart('tempChart', 'Temperature °C', data.temperatures, data.labels, '#f59e0b');
     makeChart('humidChart', 'Humidity %', data.humidities, data.labels, '#3b82f6');
     makeChart('vibChart', 'Vibration', data.vibrations, data.labels, '#ef4444');
+    updateLastUpdated();
     setTimeout(loadAntiquitiesDashboard, 30000);
 }
 
@@ -86,6 +96,7 @@ async function loadPartnerDashboard() {
             options: { responsive: true }
         });
     }
+    updateLastUpdated();
     setTimeout(loadPartnerDashboard, 30000);
 }
 
@@ -98,6 +109,6 @@ async function loadOwnerDashboard() {
     makeChart('tempChart', 'Temperature °C', data.temperatures, data.labels, '#f59e0b');
     makeChart('humidChart', 'Humidity %', data.humidities, data.labels, '#3b82f6');
     makeChart('ownerVibChart', 'Vibration', data.vibrations, data.labels, '#ef4444');
+    updateLastUpdated();
     setTimeout(loadOwnerDashboard, 30000);
 }
-

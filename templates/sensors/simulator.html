@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="page-header">
+    <h2>🧪 Sensor Data Simulator</h2>
+    <p>Simulate ESP32 sensor readings for testing — Admin only</p>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; max-width:900px;">
+
+    <!-- Simulator Form -->
+    <div class="card">
+        <h3>Send Simulated Reading</h3>
+        <div class="form-group">
+            <label>Building</label>
+            <select id="sim-building">
+                <option value="">-- Select Building --</option>
+                {% for b in buildings %}
+                <option value="{{ b.building_id }}">{{ b.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Mode</label>
+            <select id="sim-mode">
+                <option value="normal">🟢 Normal — Safe readings</option>
+                <option value="warning">🟡 Warning — Above threshold</option>
+                <option value="critical">🔴 Critical — Danger zone</option>
+            </select>
+        </div>
+
+        <div class="card" style="background:#f5f5f4; margin-bottom:1.5rem; padding:1rem;">
+            <p style="font-size:0.8rem; font-weight:600; color:#44403c; margin-bottom:0.5rem;">
+                Expected ranges per mode:
+            </p>
+            <table style="font-size:0.78rem; width:100%;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.3rem 0.5rem; color:#78716c;">Mode</th>
+                        <th style="text-align:left; padding:0.3rem 0.5rem; color:#78716c;">Temp (°C)</th>
+                        <th style="text-align:left; padding:0.3rem 0.5rem; color:#78716c;">Humidity (%)</th>
+                        <th style="text-align:left; padding:0.3rem 0.5rem; color:#78716c;">Vibration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding:0.3rem 0.5rem;"><span class="badge badge-normal">Normal</span></td>
+                        <td style="padding:0.3rem 0.5rem;">18 – 35</td>
+                        <td style="padding:0.3rem 0.5rem;">30 – 70</td>
+                        <td style="padding:0.3rem 0.5rem;">0.0 – 0.5</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0.3rem 0.5rem;"><span class="badge badge-warning">Warning</span></td>
+                        <td style="padding:0.3rem 0.5rem;">40 – 47</td>
+                        <td style="padding:0.3rem 0.5rem;">80 – 95</td>
+                        <td style="padding:0.3rem 0.5rem;">0.8 – 0.95</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0.3rem 0.5rem;"><span class="badge badge-critical">Critical</span></td>
+                        <td style="padding:0.3rem 0.5rem;">48 – 65</td>
+                        <td style="padding:0.3rem 0.5rem;">96 – 100</td>
+                        <td style="padding:0.3rem 0.5rem;">0.96 – 1.5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button onclick="simulateReading()" class="btn-login">
+            ▶ Send Simulated Reading
+        </button>
+
+        <div id="sim-result" style="margin-top:1rem; display:none;"></div>
+    </div>
+
+    <!-- Recent Simulated Readings -->
+    <div class="card">
+        <h3>Recent Readings</h3>
+        <div id="recent-readings">Loading...</div>
+    </div>
+</div>
+
+<script>
+async function simulateReading() {
+    const buildingId = document.getElementById('sim-building').value;
+    const mode = document.getElementById('sim-mode').value;
+    const resultDiv = document.getElementById('sim-result');
+
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div class="success-box">Sending...</div>';
+
+    if (!buildingId) {
+        resultDiv.innerHTML = '<div class="error-box">Please select a building</div>';
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/sensor-data/simulate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                building_id: parseInt(buildingId),
+                mode: mode
+            })
+        });
+        const data = await res.json();
+        console.log('Response:', data);
+
+        if (data.status === 'ok') {
+            resultDiv.innerHTML = `
+                <div class="success-box">
+                    ✅ Reading sent successfully!<br>
+                    <strong>ID:</strong> ${data.data_id}<br>
+                    <strong>🌡️ Temperature:</strong> ${data.temperature}°C<br>
+                    <strong>💧 Humidity:</strong> ${data.humidity}%<br>
+                    <strong>📳 Vibration:</strong> ${data.vibration}<br>
+                    <strong>Mode:</strong> ${data.mode}
+                </div>`;
+            loadRecentReadings();
+        } else {
+            resultDiv.innerHTML = `<div class="error-box">❌ Error: ${data.error}</div>`;
+        }
+    } catch(err) {
+        console.error('Fetch error:', err);
+        resultDiv.innerHTML = `<div class="error-box">❌ Network error: ${err.message}</div>`;
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function loadRecentReadings() {
+    const res = await fetch('/api/dashboard-stats/');
+    const data = await res.json();
+    const container = document.getElementById('recent-readings');
+
+    if (data.labels.length === 0) {
+        container.innerHTML = '<p class="empty-state">No readings yet</p>';
+        return;
+    }
+
+    let html = '<table style="width:100%; font-size:0.8rem;">';
+    html += '<thead><tr>';
+    html += '<th style="padding:0.4rem; text-align:left; color:#78716c;">Time</th>';
+    html += '<th style="padding:0.4rem; text-align:left; color:#78716c;">Temp</th>';
+    html += '<th style="padding:0.4rem; text-align:left; color:#78716c;">Humidity</th>';
+    html += '<th style="padding:0.4rem; text-align:left; color:#78716c;">Vibration</th>';
+    html += '</tr></thead><tbody>';
+
+    const last10 = data.labels.slice(-10);
+    const temps = data.temperatures.slice(-10);
+    const humids = data.humidities.slice(-10);
+    const vibs = data.vibrations.slice(-10);
+
+    for (let i = last10.length - 1; i >= 0; i--) {
+        html += `<tr style="border-top:1px solid #e7e5e4;">
+            <td style="padding:0.4rem; color:#78716c;">${last10[i]}</td>
+            <td style="padding:0.4rem;" class="${temps[i] >= 48 ? 'value-critical' : temps[i] >= 40 ? 'value-warning' : 'value-normal'}">${temps[i]}°C</td>
+            <td style="padding:0.4rem;" class="${humids[i] >= 96 ? 'value-critical' : humids[i] >= 80 ? 'value-warning' : 'value-normal'}">${humids[i]}%</td>
+            <td style="padding:0.4rem;" class="${vibs[i] >= 0.96 ? 'value-critical' : vibs[i] >= 0.8 ? 'value-warning' : 'value-normal'}">${vibs[i]}</td>
+        </tr>`;
+    }
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+loadRecentReadings();
+</script>
+{% endblock %}

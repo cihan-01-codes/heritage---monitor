@@ -1,27 +1,33 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<div class="page-header">
-    <h2>Building Owner Dashboard</h2>
-    <p>Your buildings at a glance</p>
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h2>Building Owner Dashboard</h2>
+        <p>Your buildings at a glance</p>
+    </div>
+    <div style="text-align:right;">
+        <p style="font-size:0.75rem; color:#78716c;">Last updated</p>
+        <p style="font-size:0.8rem; font-weight:600; color:#44403c;" id="last-updated">--</p>
+    </div>
 </div>
 
-<div class="card" style="margin-bottom:1.5rem">
-    <h3>My Buildings</h3>
+<div class="card" style="margin-bottom:1.5rem;">
+    <h3>🏛️ My Buildings</h3>
     <div id="buildings-list">Loading...</div>
 </div>
 
 <div class="charts-grid">
     <div class="card">
-        <h3>Temperature Trend</h3>
+        <h3>🌡️ Temperature Trend</h3>
         <canvas id="tempChart"></canvas>
     </div>
     <div class="card">
-        <h3>Humidity Trend</h3>
+        <h3>💧 Humidity Trend</h3>
         <canvas id="humidChart"></canvas>
     </div>
     <div class="card">
-        <h3>Vibration Trend</h3>
+        <h3>📳 Vibration Trend</h3>
         <canvas id="ownerVibChart"></canvas>
     </div>
 </div>
