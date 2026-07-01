@@ -6,6 +6,7 @@ from .models import Building
 from accounts.models import User
 from sensors.models import SensorData
 from alerts.models import Alert
+from django.utils import timezone
 
 
 @login_required
@@ -92,7 +93,7 @@ def building_stats_api(request, building_id):
         'location': building.location_gps,
         'total_readings': SensorData.objects.filter(building=building).count(),
         'total_alerts': Alert.objects.filter(building=building).count(),
-        'labels': [r.recorded_at.strftime('%b %d %H:%M') for r in readings],
+        'labels': [r.recorded_at.astimezone(timezone.get_current_timezone()).strftime('%b %d %H:%M') for r in readings],
         'temperatures': [r.temperature for r in readings],
         'humidities': [r.humidity for r in readings],
         'vibrations': [r.vibration for r in readings],

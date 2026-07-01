@@ -7,6 +7,7 @@ from sensors.models import SensorData
 from alerts.models import Alert
 from buildings.models import Building
 from .models import User, generate_temp_password
+from django.utils import timezone
 
 
 def login_view(request):
@@ -107,7 +108,7 @@ def dashboard_stats(request):
         'total_users': User.objects.count(),
         'total_alerts': Alert.objects.count(),
         'total_readings': SensorData.objects.count(),
-        'labels': [r.recorded_at.strftime('%H:%M') for r in readings],
+        'labels': [r.recorded_at.astimezone(timezone.get_current_timezone()).strftime('%H:%M') for r in readings],
         'temperatures': [r.temperature for r in readings],
         'humidities': [r.humidity for r in readings],
         'vibrations': [r.vibration for r in readings],
